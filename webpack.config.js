@@ -29,7 +29,13 @@ const common = {
       },
       {
         test: /\.jsx?$/,
-        loaders: ['babel?cacheDirectory'],
+        loader: 'babel',
+        query: {
+          cacheDirectory: true,
+          plugins: [
+            'transform-decorators-legacy'
+          ]
+        },
         include: PATHS.app
       }
     ],

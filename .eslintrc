@@ -154,7 +154,7 @@
     "no-delete-var": 2, // disallow deletion of variables
     "no-label-var": 2, // disallow labels that share a name with a variable
     "no-shadow-restricted-names": 2, // disallow shadowing of names such as arguments
-    "no-shadow": 2, // disallow declaration of variables already declared in the outer scope
+    "no-shadow": 0, // disallow declaration of variables already declared in the outer scope
     "no-undef-init": 2, // disallow use of undefined when initializing variables
     "no-undef": 2, // disallow use of undeclared variables unless mentioned in a /*global */ block
     "no-undefined": 2, // disallow use of undefined variable
