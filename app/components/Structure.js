@@ -6,7 +6,10 @@ import Element from './Element';
 import {moveElement} from '../actions';
 
 const mapDispatchToProps = dispatch => ({
-  moveElement: (index, newIndex) => dispatch(moveElement(index, newIndex)),
+  moveElement: (index, newIndex) => {
+    console.log('move', index, newIndex);
+    return dispatch(moveElement(index, newIndex));
+  }
 });
 
 @DragDropContext(HTML5Backend)

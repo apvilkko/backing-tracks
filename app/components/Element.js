@@ -1,6 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import {DragSource, DropTarget} from 'react-dnd';
 import {findDOMNode} from 'react-dom';
+import flow from 'lodash/flow';
 
 const elementStyle = {
   position: 'absolute',
@@ -18,20 +19,33 @@ const elementStyleBottom = Object.assign({
 
 class Element extends Component {
   render() {
-    const {data, index, onRemove, onDouble, isDragging, connectDragSource} = this.props;
-    return connectDragSource(
+    const {
+      data,
+      index,
+      onRemove,
+      onDouble,
+      // isDragging,
+      connectDragSource,
+      connectDropTarget,
+    } = this.props;
+    return connectDropTarget(connectDragSource(
       <li style={{
         position: 'relative',
         display: 'inline-block',
-        padding: '1em 2em',
+        paddingTop: '1em',
+        width: '5em',
+        height: '3em',
+        lineHeight: '1em',
+        textAlign: 'center',
         marginRight: '0.2em',
         border: '1px solid #999',
+        // opacity: isDragging ? '0.5' : '1.0'
       }}>
-        <span>{data}{isDragging ? ' [D]' : ''}</span>
+        <span>{data.chord}</span>
         <a onClick={() => onRemove(index)} style={elementStyleTop}>-</a>
         <a onClick={() => onDouble(index)} style={elementStyleBottom}>+</a>
       </li>
-    );
+    ));
   }
 }
 
@@ -42,6 +56,7 @@ Element.propTypes = {
   onDouble: PropTypes.func,
   isDragging: PropTypes.bool,
   connectDragSource: PropTypes.func,
+  connectDropTarget: PropTypes.func,
 };
 
 const source = {
@@ -56,6 +71,7 @@ const target = {
   hover(props, monitor, component) {
     const dragIndex = monitor.getItem().index;
     const hoverIndex = props.index;
+    // console.log('hover', dragIndex, hoverIndex);
 
     // Don't replace items with themselves
     if (dragIndex === hoverIndex) {
@@ -64,27 +80,24 @@ const target = {
 
     // Determine rectangle on screen
     const hoverBoundingRect = findDOMNode(component).getBoundingClientRect();
-
-    // Get vertical middle
-    const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-
+    const hoverMiddleX = (hoverBoundingRect.right - hoverBoundingRect.left) / 2;
     // Determine mouse position
     const clientOffset = monitor.getClientOffset();
-
-    // Get pixels to the top
-    const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+    const hoverClientX = clientOffset.x - hoverBoundingRect.left;
 
     // Only perform the move when the mouse has crossed half of the items height
     // When dragging downwards, only move when the cursor is below 50%
     // When dragging upwards, only move when the cursor is above 50%
 
     // Dragging downwards
-    if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+    if (dragIndex < hoverIndex && hoverClientX < hoverMiddleX) {
+      console.log('right');
       return;
     }
 
     // Dragging upwards
-    if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+    if (dragIndex > hoverIndex && hoverClientX > hoverMiddleX) {
+      console.log('left');
       return;
     }
 
@@ -104,10 +117,12 @@ const dragCollect = (connect, monitor) => ({
   isDragging: monitor.isDragging()
 });
 
-const dropCollect = connect => ({
-  connectDropTarget: connect.dropTarget()
+const dropCollect = (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget(),
+  isOver: monitor.isOver(),
 });
 
-export default DropTarget('element', target, dropCollect)(
-  DragSource('element', source, dragCollect)(Element)
-);
+export default flow(
+  DragSource('element', source, dragCollect),
+  DropTarget('element', target, dropCollect)
+)(Element);

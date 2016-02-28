@@ -1,3 +1,7 @@
 body {
   font-size: 18px;
 }
+
+li {
+  box-sizing: border-box;
+}
