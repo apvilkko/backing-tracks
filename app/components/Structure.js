@@ -19,6 +19,7 @@ class Structure extends Component {
     structure: PropTypes.any,
     onRemove: PropTypes.func,
     onDouble: PropTypes.func,
+    onHalve: PropTypes.func,
     moveElement: PropTypes.func.isRequired,
   }
 
@@ -27,6 +28,7 @@ class Structure extends Component {
       structure,
       onRemove,
       onDouble,
+      onHalve,
       moveElement
     } = this.props;
 
@@ -38,6 +40,7 @@ class Structure extends Component {
             data={val}
             onRemove={onRemove}
             onDouble={onDouble}
+            onHalve={onHalve}
             move={moveElement} />
         )}
       </ul>
@@ -45,9 +48,13 @@ class Structure extends Component {
   }
 }
 
-export const SongStructure = ({structure, onRemove, onDouble}) => (
+export const SongStructure = ({structure, onRemove, onDouble, onHalve}) => (
   <div>
     <div>Song structure</div>
-    <Structure structure={structure} onRemove={onRemove} onDouble={onDouble} />
+    <Structure
+      structure={structure}
+      onRemove={onRemove}
+      onDouble={onDouble}
+      onHalve={onHalve} />
   </div>
 );

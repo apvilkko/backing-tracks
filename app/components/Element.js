@@ -17,6 +17,11 @@ const elementStyleBottom = Object.assign({
   bottom: '0.1em',
 }, elementStyle);
 
+const elementStyleMiddle = Object.assign({
+  top: '1em',
+}, elementStyle);
+
+
 class Element extends Component {
   render() {
     const {
@@ -24,6 +29,7 @@ class Element extends Component {
       index,
       onRemove,
       onDouble,
+      onHalve,
       // isDragging,
       connectDragSource,
       connectDropTarget,
@@ -41,9 +47,10 @@ class Element extends Component {
         border: '1px solid #999',
         // opacity: isDragging ? '0.5' : '1.0'
       }}>
-        <span>{data.chord}</span>
-        <a onClick={() => onRemove(index)} style={elementStyleTop}>-</a>
-        <a onClick={() => onDouble(index)} style={elementStyleBottom}>+</a>
+        <span>{data.chord} {data.duration}</span>
+        <a onClick={() => onRemove(index)} style={elementStyleTop}>X</a>
+        <a onClick={() => onHalve(index)} style={elementStyleMiddle}>½</a>
+        <a onClick={() => onDouble(index)} style={elementStyleBottom}>*2</a>
       </li>
     ));
   }
@@ -54,6 +61,7 @@ Element.propTypes = {
   index: PropTypes.number,
   onRemove: PropTypes.func,
   onDouble: PropTypes.func,
+  onHalve: PropTypes.func,
   isDragging: PropTypes.bool,
   connectDragSource: PropTypes.func,
   connectDropTarget: PropTypes.func,
