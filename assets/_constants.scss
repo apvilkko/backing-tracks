@@ -1,0 +1,24 @@
+$baseline: 10px;
+
+$color-brand-primary: #d62d2d;
+$color-brand-primary-dark: darken($color-brand-primary, 15%);
+$color-brand-secondary: #009688;
+$color-brand-secondary-dark: darken($color-brand-secondary, 15%);
+
+$color-element-light: #f3f3f3;
+$color-element-medium: #b5b5b5;
+
+$color-text-dark: #1d1d1d;
+$color-text-semidark: #545454;
+
+$font-family-default: 'Merriweather', serif;
+$font-family-alternative: 'Roboto', sans-serif;
+
+$font-size-tiny: 1.3rem;
+$font-size-small: 1.5rem;
+$font-size-medium: 3rem;
+$font-size-huge: 10rem;
+
+$font-weight-regular: 400;
+$font-weight-bold: 700;
+$font-weight-black: 900;

@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css?family=Merriweather:400,700');
+@import url('https://fonts.googleapis.com/css?family=Roboto:900');
+
+$base-font-family: 'Merriweather', serif;
+@import "~normalize-scss/sass/normalize/import-now";
+
+$fa-font-path: "~font-awesome/fonts";
+@import "~font-awesome/scss/font-awesome";
+
+@import "./constants";
+@import "./transitions";
+
+html {
+  box-sizing: border-box;
+  font-size: 18px;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  overflow-y: scroll;
+}
+
+b {
+  font-weight: $font-weight-bold;
+}
+
+ul {
+  position: relative;
+  padding-left: 0;
+}

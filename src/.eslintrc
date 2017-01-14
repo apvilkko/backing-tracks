@@ -1,0 +1,16 @@
+{
+  "root": false,
+  "env": {
+    "node": false,
+    "browser": true
+  },
+  "rules": {
+    "no-console": ["warn"],
+    "import/extensions": "off",
+    "object-curly-spacing": 0,
+    "comma-dangle": 0
+  },
+  "globals": {
+    "process": true
+  }
+}

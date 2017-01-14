@@ -1,69 +1,11 @@
-const path = require('path');
 const merge = require('webpack-merge');
-const webpack = require('webpack');
-const TARGET = process.env.npm_lifecycle_event;
 
-const PATHS = {
-  app: path.join(__dirname, 'app'),
-  build: path.join(__dirname, 'build')
-};
-process.env.BABEL_ENV = TARGET;
+const baseConfig = require('./webpack/webpack.config.base');
+const developmentConfig = require('./webpack/webpack.config.development');
+const productionConfig = require('./webpack/webpack.config.production');
 
-const common = {
-  entry: {
-    app: PATHS.app
-  },
-  resolve: {
-    extensions: ['', '.js', '.jsx']
-  },
-  output: {
-    path: PATHS.build,
-    filename: 'bundle.js'
-  },
-  module: {
-    loaders: [
-      {
-        test: /\.css$/,
-        loaders: ['style', 'css'],
-        include: PATHS.app
-      },
-      {
-        test: /\.jsx?$/,
-        loader: 'babel',
-        query: {
-          cacheDirectory: true,
-          plugins: [
-            'transform-decorators-legacy'
-          ]
-        },
-        include: PATHS.app
-      }
-    ],
-    preLoaders: [
-      {test: /\.jsx?$/, loader: 'eslint', include: PATHS.app}
-    ]
-  }
-};
 
-if (TARGET === 'start' || !TARGET) {
-  module.exports = merge(common, {
-    devtool: 'eval-source-map',
-    devServer: {
-      contentBase: PATHS.build,
-      historyApiFallback: true,
-      hot: true,
-      inline: true,
-      progress: true,
-      stats: 'errors-only',
-      host: process.env.HOST,
-      port: process.env.PORT
-    },
-    plugins: [
-      new webpack.HotModuleReplacementPlugin(),
-    ]
-  });
-}
+const isProduction = process.env.NODE_ENV === 'production';
 
-if (TARGET === 'build') {
-  module.exports = merge(common, {});
-}
+const config = merge(baseConfig, isProduction ? productionConfig : developmentConfig);
+module.exports = config;

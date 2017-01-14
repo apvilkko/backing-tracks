@@ -1,8 +1,5 @@
-# Logs
-npm-debug.log*
-
-# Dependency directory
 node_modules
-
-# Build
-build/*.js
+dist
+*.log
+*.log.*
+locals.js
