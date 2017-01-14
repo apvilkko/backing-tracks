@@ -19,10 +19,12 @@ const getNextNoteIndex = (track, currentNote) => {
   if (index >= track.length) {
     index = 0;
   }
-  while (!track[index].velocity) {
+  let rounds = 0;
+  while (rounds < 2 && !track[index].velocity) {
     index += 1;
     if (index >= track.length) {
       index = 0;
+      rounds += 1;
     }
   }
   return index;

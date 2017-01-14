@@ -16,7 +16,7 @@ export default [
     id: 3,
     name: 'Octavario',
     string: 'Fm 4 C#m 4 Fm 4 Abm 4 Eb/Bb 4 Abm6/Bb 4 Eb/Bb 4 Abm6 4 Eb/G 4 Abm6 4 Cm/G 4 D/F# 4 Bdim 4 A/E 2 C#m 2 D 4 A/E 2 C#m 2 C 4 Em 4 Bb/F 2 Dm 2 Db 4 Bb/F 4 Db 4 E 4 G 4',
-    tempo: 80,
+    tempo: 84,
   },
   {
     id: 4,
@@ -30,5 +30,17 @@ export default [
     name: 'Chromatic',
     string: 'Em9 4 Ebmaj9 4 C/D 4 Dbmaj7#11 4',
     tempo: 160,
+  },
+  {
+    id: 6,
+    name: 'African',
+    string: 'B 2 D#m 2 G#m 2 G#m/F# 2 A/E 2 E/F# 2 G#m 2 A 3 C#m 1',
+    tempo: 98,
+  },
+  {
+    id: 7,
+    name: 'Getting lucky',
+    string: 'Am7 4 Cadd9 4 Em7 4 D 4',
+    tempo: 115,
   }
 ];

@@ -30,14 +30,12 @@ export default {
     PresetSelector,
     TempoInput,
   },
-  props: {
-    textInput: String
-  },
   data: () => ({
-    engine
+    engine,
+    tempo: 120,
+    textInput: '',
   }),
   mounted() {
-    this.textInput = '';
     this.tempo = this.engine.getTempo();
   },
   computed: {
@@ -51,9 +49,9 @@ export default {
     },
     onPresetChange(presetId) {
       const value = this.engine.getPreset(presetId);
-      this.textInput = value.string;
       this.engine.setPreset(presetId);
       this.tempo = this.engine.getTempo();
+      this.textInput = value.string;
     },
     onTempoChanged(value) {
       this.engine.setTempo(value);
