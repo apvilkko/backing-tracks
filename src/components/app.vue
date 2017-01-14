@@ -3,8 +3,11 @@
     <h1>I Am Your Band Now</h1>
     <temp-input v-model="textInput" @done="onDone"></temp-input>
     <preset-selector @changed="onPresetChange"></preset-selector>
-    <chord-lane :lane="engine.chordLane" />
-    <button @click="toggle">play/pause</button>
+    <tempo-input v-model="tempo" @changed="onTempoChanged"></tempo-input>
+    <chord-lane :lane="engine.chordLane" :position="chordPosition" />
+    <div>
+      <button @click="toggle">play/pause</button>
+    </div>
     <!-- <pre>{{engine.ctx}}</pre> -->
   </div>
 </template>
@@ -14,6 +17,7 @@
 import TempInput from './temp-input';
 import ChordLane from './chord-lane';
 import PresetSelector from './preset-selector';
+import TempoInput from './tempo-input';
 import {createEngine} from '../engine';
 
 const engine = createEngine();
@@ -24,6 +28,7 @@ export default {
     TempInput,
     ChordLane,
     PresetSelector,
+    TempoInput,
   },
   props: {
     textInput: String
@@ -32,7 +37,13 @@ export default {
     engine
   }),
   mounted() {
-    this.textInput = 'C 4 Am7 4 Dm7 4 F/G 2 G 2';
+    this.textInput = '';
+    this.tempo = this.engine.getTempo();
+  },
+  computed: {
+    chordPosition() {
+      return this.engine.getChordPosition();
+    }
   },
   methods: {
     onDone(value) {
@@ -42,6 +53,10 @@ export default {
       const value = this.engine.getPreset(presetId);
       this.textInput = value.string;
       this.engine.setPreset(presetId);
+      this.tempo = this.engine.getTempo();
+    },
+    onTempoChanged(value) {
+      this.engine.setTempo(value);
     },
     toggle() {
       this.engine.toggle();

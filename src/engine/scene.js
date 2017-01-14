@@ -25,6 +25,6 @@ export const createScene = ({tempo, shufflePercentage, chordLane, style}) => {
   keys.forEach(key => {
     newScene.parts[key] = createPart(key, chordLane, style);
   });
-  createChords(newScene, chordLane, T.EPIANO, urlify(T.EPIANO));
+  createChords(newScene, chordLane, T.EPIANO, urlify(getSample(T.EPIANO)));
   return newScene;
 };

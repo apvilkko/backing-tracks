@@ -14,15 +14,33 @@ export const initialRuntime = runtime => ({
   nextNoteTime: runtime.instances.context.currentTime,
 });
 
+const getNextNoteIndex = (track, currentNote) => {
+  let index = (currentNote % track.length) + 1;
+  if (index >= track.length) {
+    index = 0;
+  }
+  while (!track[index].velocity) {
+    index += 1;
+    if (index >= track.length) {
+      index = 0;
+    }
+  }
+  return index;
+};
+
 const scheduleNote = ctx => {
   const {state, runtime} = ctx;
   const currentNote = runtime.sequencer.currentNote;
   const scene = state.scene;
   Object.keys(scene.parts).forEach(key => {
     const track = scene.parts[key].pattern;
-    const note = track[currentNote % track.length];
+    const index = currentNote % track.length;
+    const note = track[index];
+    const nextNoteIndex = getNextNoteIndex(track, currentNote);
+    const thisNoteLen = nextNoteIndex > index ? nextNoteIndex - index :
+      nextNoteIndex + track.length - index;
     if (note.velocity) {
-      playNote(ctx, key, note);
+      playNote(ctx, key, note, thisNoteLen);
     }
   });
 };

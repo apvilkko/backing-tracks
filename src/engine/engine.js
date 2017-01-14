@@ -2,6 +2,9 @@ import ChordParser from './chord-builder/parser';
 import ChordBuilder from './chord-builder/builder';
 import {initCtx, newScene, toggle} from './audio';
 import presets from './presets';
+import {
+  setScene,
+} from './stateful-web-audio';
 
 class Engine {
   constructor() {
@@ -27,6 +30,16 @@ class Engine {
     toggle(this.ctx);
   }
 
+  setTempo(value) {
+    this.tempo = value;
+    this.ctx.state.scene.tempo = value;
+    setScene(this.ctx, this.ctx.state.scene);
+  }
+
+  getTempo() {
+    return this.tempo;
+  }
+
   updateScene() {
     newScene(this.ctx, {
       tempo: this.tempo,
@@ -46,6 +59,10 @@ class Engine {
     this.tempo = preset.tempo;
     this.style = preset.style || 'default';
     this.setSongFromChordInput(preset.string);
+  }
+
+  getChordPosition() {
+    return this.ctx.runtime.sequencer.currentNote;
   }
 
   setSongFromChordInput(value) {
@@ -69,7 +86,8 @@ class Engine {
     const beatLength = Math.round(4 * this.timeSignature[0] / this.timeSignature[1]);
     chords.forEach(item => {
       for (let i = 0; i < item.duration * beatLength; ++i) {
-        this.chordLane.push(i === 0 ? item.chord : null);
+        this.chordLane.push(i === 0 ?
+          {...item.chord, _position: this.chordLane.length} : null);
       }
     });
     this.updateScene();
