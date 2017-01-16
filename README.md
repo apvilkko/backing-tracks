@@ -1,7 +1,5 @@
 # Backing tracks
 
-## Roadmap
+http://aapee.kapsi.fi/backing-tracks
 
-* Copy element with ctrl + drag and drop
-* Integrate chord parser
-* Integrate sequencer and sound/sample players
+TODO cleanup code, separate chord parser and audio engine
