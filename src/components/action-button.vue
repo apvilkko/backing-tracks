@@ -6,36 +6,35 @@
 </template>
 
 <script>
-
 export default {
   props: {
     text: {
       type: String,
-      required: true
+      required: true,
     },
     icon: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   computed: {
     iconClasses() {
       return {
         fa: true,
-        [`fa-${this.icon}`]: true
-      };
-    }
+        [`fa-${this.icon}`]: true,
+      }
+    },
   },
   methods: {
     onClick() {
-      this.$emit('click');
-    }
-  }
-};
+      this.$emit('click')
+    },
+  },
+}
 </script>
 
 <style lang="scss" scoped>
-@import "assets/constants";
+@import '../style/constants';
 
 .action-button {
   padding: 8px 12px;
@@ -54,14 +53,15 @@ export default {
 
   background-color: white;
 
-  transition: box-shadow .2s ease-in-out;
+  transition: box-shadow 0.2s ease-in-out;
 
   .fa {
     margin-right: 4px;
     color: $color-text-semidark;
   }
 
-  &:active, &:focus {
+  &:active,
+  &:focus {
     outline: none;
     box-shadow: 0 0 0 1px $color-brand-secondary;
   }

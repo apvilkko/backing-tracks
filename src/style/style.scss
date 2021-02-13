@@ -2,20 +2,22 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:900');
 
 $base-font-family: 'Merriweather', serif;
-@import "~normalize-scss/sass/normalize/import-now";
+@import '~normalize-scss/sass/normalize/import-now';
 
-$fa-font-path: "~font-awesome/fonts";
-@import "~font-awesome/scss/font-awesome";
+$fa-font-path: '~font-awesome/fonts';
+@import '~font-awesome/scss/font-awesome';
 
-@import "./constants";
-@import "./transitions";
+@import './constants';
+@import './transitions';
 
 html {
   box-sizing: border-box;
   font-size: 18px;
 }
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   box-sizing: inherit;
 }
 

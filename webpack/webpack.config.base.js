@@ -1,64 +1,65 @@
-const path = require('path');
-const webpack = require('webpack');
-const HtmlPlugin = require('html-webpack-plugin');
-const CleanPlugin = require('clean-webpack-plugin');
-
+const path = require('path')
+const webpack = require('webpack')
+const HtmlPlugin = require('html-webpack-plugin')
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, '..', 'dist'),
-    filename: 'bundle.js'
+    filename: 'bundle.js',
   },
   resolve: {
     extensions: ['.js', '.vue'],
     alias: {
       components: 'src/components',
-      assets: 'assets'
-    }
+    },
   },
   module: {
     rules: [
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
-      }, {
+        loader: 'babel-loader',
+      },
+      {
         test: /\.vue$/,
-        loader: 'vue-loader',
-        options: {
-          loaders: {
-            scss: 'vue-style-loader!css-loader!sass-loader'
-          }
-        }
+        use: ['vue-loader'],
       },
       {
         test: /\.scss$/,
-        loader: 'css-loader!sass-loader'
+        use: [
+          'vue-style-loader',
+          { loader: 'css-loader', options: { esModule: false } },
+          'sass-loader',
+        ],
       },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'url-loader?limit=10000&mimetype=application/font-woff'
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 10000,
+              mimetype: 'application/font-woff',
+            },
+          },
+        ],
       },
       {
         test: /\.(ttf|otf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?|(jpg|gif)$/,
-        loader: 'file-loader'
-      }
-    ]
+        use: ['file-loader'],
+      },
+    ],
   },
   plugins: [
-    new webpack.optimize.OccurrenceOrderPlugin(),
+    new VueLoaderPlugin(),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
+      'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
     }),
     new HtmlPlugin({
       title: 'Backing Tracks',
-      template: 'assets/index.ejs',
-      hash: false
+      template: 'src/index.ejs',
     }),
-    new CleanPlugin(['*.js'], {
-      root: path.resolve(__dirname, '..', 'dist'),
-      verbose: false
-    })
-  ]
-};
+  ],
+}

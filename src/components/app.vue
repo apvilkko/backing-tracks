@@ -13,14 +13,13 @@
 </template>
 
 <script>
+import TempInput from './temp-input'
+import ChordLane from './chord-lane'
+import PresetSelector from './preset-selector'
+import TempoInput from './tempo-input'
+import { createEngine } from '../engine'
 
-import TempInput from './temp-input';
-import ChordLane from './chord-lane';
-import PresetSelector from './preset-selector';
-import TempoInput from './tempo-input';
-import {createEngine} from '../engine';
-
-const engine = createEngine();
+const engine = createEngine()
 
 export default {
   name: 'App',
@@ -36,37 +35,40 @@ export default {
     textInput: '',
   }),
   mounted() {
-    this.tempo = this.engine.getTempo();
+    this.tempo = this.engine.getTempo()
   },
   computed: {
     chordPosition() {
-      return this.engine.getChordPosition();
-    }
+      return this.engine.getChordPosition()
+    },
   },
   methods: {
     onDone(value) {
       this.engine.setSongFromChordInput(value)
     },
     onPresetChange(presetId) {
-      const value = this.engine.getPreset(presetId);
-      this.engine.setPreset(presetId);
-      this.tempo = this.engine.getTempo();
-      this.textInput = value.string;
+      const value = this.engine.getPreset(presetId)
+      this.engine.setPreset(presetId)
+      this.tempo = this.engine.getTempo()
+      this.textInput = value.string
     },
     onTempoChanged(value) {
-      this.engine.setTempo(value);
+      this.engine.setTempo(value)
     },
     toggle() {
-      this.engine.toggle();
-    }
+      this.engine.toggle()
+    },
   },
-};
-
+}
 </script>
 
-<style>
-
-html, body, button, select, option, input {
+<style lang="scss">
+html,
+body,
+button,
+select,
+option,
+input {
   font-size: 18px;
 }
 
@@ -74,8 +76,8 @@ h1 {
   text-transform: uppercase;
 }
 
-button, select {
+button,
+select {
   padding: 1em;
 }
-
 </style>

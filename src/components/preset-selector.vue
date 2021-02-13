@@ -2,35 +2,32 @@
   <select v-model="selected" v-on:change="onChange">
     <option value="">Select preset song…</option>
     <option v-for="preset in presets" v-bind:value="preset.id">
-      {{preset.name}}
+      {{ preset.name }}
     </option>
   </select>
 </template>
 
 <script>
-
-import presets from '../engine/presets';
+import presets from '../engine/presets'
 
 export default {
   data: () => ({
     presets,
-    selected: '',
+    selected: ''
   }),
   methods: {
     onChange() {
-      this.$emit('changed', this.selected);
+      this.$emit('changed', this.selected)
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
-
-@import "assets/constants";
+@import '../style/constants';
 
 select {
   margin-top: 1em;
   display: block;
 }
-
 </style>

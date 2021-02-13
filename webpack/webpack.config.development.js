@@ -1,21 +1,11 @@
-const webpack = require('webpack');
-const path = require('path');
-const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
-
+const webpack = require('webpack')
+const path = require('path')
 
 module.exports = {
-  devtool: '#eval-source-map',
+  devtool: 'eval-source-map',
   devServer: {
     contentBase: path.resolve(__dirname, '..', 'dist'),
     historyApiFallback: true,
-    noInfo: true
   },
-  performance: {
-    hints: false
-  },
-  plugins: [
-    new webpack.NamedModulesPlugin(),
-    new webpack.NoErrorsPlugin(),
-    new FriendlyErrorsPlugin()
-  ]
-};
+  plugins: [],
+}

@@ -1,17 +1,18 @@
 <template>
   <div>
-  <!--<pre>{{lane}}</pre>-->
-  <ul>
-    <li v-for="item in chords" v-bind:class="{playback: isCurrent(item), split: shouldSplit(item)}">
-      {{item.name}}
-    </li>
-  </ul>
-
+    <!--<pre>{{lane}}</pre>-->
+    <ul>
+      <li
+        v-for="item in chords"
+        v-bind:class="{ playback: isCurrent(item), split: shouldSplit(item) }"
+      >
+        {{ item.name }}
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
-
 export default {
   props: {
     lane: {
@@ -19,32 +20,34 @@ export default {
       required: true
     },
     position: {
-      type: Number,
+      type: Number
     }
   },
   computed: {
-    chords() { return this.lane.filter(item => !!item) },
+    chords() {
+      return this.lane.filter(item => !!item)
+    }
   },
   methods: {
     isCurrent(item) {
-      return item && this.position === item._position;
+      return item && this.position === item._position
     },
     shouldSplit(item) {
-      return item._position % 64 === 0;
+      return item._position % 64 === 0
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
-@import "assets/constants";
+@import '../style/constants';
 
 ul {
   list-style-type: none;
   max-width: 30em;
   &:after {
     clear: both;
-    content: "";
+    content: '';
     display: table;
   }
 }
@@ -71,5 +74,4 @@ li {
 .split {
   clear: left;
 }
-
 </style>
