@@ -4,13 +4,13 @@ const HtmlPlugin = require('html-webpack-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
-  entry: './src/index.js',
+  entry: './src/index.ts',
   output: {
     path: path.resolve(__dirname, '..', 'dist'),
     filename: 'bundle.js',
   },
   resolve: {
-    extensions: ['.js', '.vue'],
+    extensions: ['.js', '.ts', '.vue'],
     alias: {
       components: 'src/components',
     },
@@ -18,7 +18,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(t|j)s$/,
         exclude: /node_modules/,
         loader: 'babel-loader',
       },
@@ -53,10 +53,10 @@ module.exports = {
     ],
   },
   plugins: [
-    new VueLoaderPlugin(),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
     }),
+    new VueLoaderPlugin(),
     new HtmlPlugin({
       title: 'Backing Tracks',
       template: 'src/index.ejs',

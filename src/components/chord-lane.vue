@@ -3,6 +3,7 @@
     <!--<pre>{{lane}}</pre>-->
     <ul>
       <li
+        v-bind:key="item._position"
         v-for="item in chords"
         v-bind:class="{ playback: isCurrent(item), split: shouldSplit(item) }"
       >
@@ -30,7 +31,7 @@ export default {
   },
   methods: {
     isCurrent(item) {
-      return item && this.position === item._position
+      return item && this.position < item._position
     },
     shouldSplit(item) {
       return item._position % 64 === 0
@@ -68,7 +69,7 @@ li {
 }
 
 .playback {
-  background-color: #bcb;
+  background-color: #cdc;
 }
 
 .split {
