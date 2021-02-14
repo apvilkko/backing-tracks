@@ -3,7 +3,8 @@ import ChordBuilder from './chord-builder/builder'
 import { initCtx, newScene, toggle } from './audio'
 import presets from './presets'
 import { setScene } from './stateful-web-audio'
-import { ChordLane } from './types'
+import { ChordLane, Preset } from './types'
+import { readPreset } from './read-preset'
 
 class Engine {
   chordLane: ChordLane
@@ -55,15 +56,18 @@ class Engine {
     //toggle(this.ctx);
   }
 
-  getPreset(presetId) {
+  getPreset(presetId: string): Preset | undefined {
     return presets.find(p => p.id === presetId)
   }
 
-  setPreset(presetId) {
-    const preset = this.getPreset(presetId)
+  setPreset(preset: Preset) {
     this.tempo = preset.tempo
     this.style = preset.style || 'default'
-    this.timeSignature = preset.timeSignature || [4, 4]
+    if (!preset.timeSignature && preset.swing) {
+      this.timeSignature = [12, 8]
+    } else {
+      this.timeSignature = preset.timeSignature || [4, 4]
+    }
     this.setSongFromChordInput(preset.string)
   }
 
@@ -72,33 +76,12 @@ class Engine {
   }
 
   setSongFromChordInput(value) {
-    this.chordLane = []
-    const pattern = /([^ ]+)\s+(\d+)/g
-    const matches = value.match(pattern)
-    const chords = (matches || []).map(item => {
-      const parts = item.split(' ')
-      const duration = parseFloat(parts[1])
-      this.parser.parse(parts[0].trim())
-      this.builder.buildChord(this.parser.model)
-      return {
-        chord: {
-          ...this.builder.model,
-          name: this.parser.toString()
-        },
-        duration
-      }
-    })
-
-    const beatLength = Math.round(
-      (4 * this.timeSignature[0]) / this.timeSignature[1]
+    this.chordLane = readPreset(
+      value,
+      this.parser,
+      this.builder,
+      this.timeSignature
     )
-    chords.forEach(item => {
-      for (let i = 0; i < item.duration * beatLength; ++i) {
-        this.chordLane.push(
-          i === 0 ? { ...item.chord, _position: this.chordLane.length } : null
-        )
-      }
-    })
     this.updateScene()
   }
 }
@@ -107,7 +90,7 @@ export const createEngine = () => {
   const engine = new Engine()
   setTimeout(() => {
     if (process.env.NODE_ENV === 'development') {
-      engine.setPreset(presets[3].id)
+      engine.setPreset(presets[3])
     }
   }, 500)
 

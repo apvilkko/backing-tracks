@@ -27,12 +27,12 @@ export default {
     TempInput,
     ChordLane,
     PresetSelector,
-    TempoInput,
+    TempoInput
   },
   data: () => ({
     engine,
     tempo: 120,
-    textInput: '',
+    textInput: ''
   }),
   mounted() {
     this.tempo = this.engine.getTempo()
@@ -40,15 +40,15 @@ export default {
   computed: {
     chordPosition() {
       return this.engine.getChordPosition()
-    },
+    }
   },
   methods: {
     onDone(value) {
       this.engine.setSongFromChordInput(value)
     },
-    onPresetChange(presetId) {
-      const value = this.engine.getPreset(presetId)
-      this.engine.setPreset(presetId)
+    onPresetChange(preset) {
+      const value = preset
+      this.engine.setPreset(preset)
       this.tempo = this.engine.getTempo()
       this.textInput = value.string
     },
@@ -57,8 +57,8 @@ export default {
     },
     toggle() {
       this.engine.toggle()
-    },
-  },
+    }
+  }
 }
 </script>
 

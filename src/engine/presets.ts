@@ -1,0 +1,55 @@
+import type { Preset } from "./types"
+
+const presets: Array<Preset> = [
+  {
+    id: '1',
+    name: 'Basic I-vi-ii7-V',
+    string: '[A] C;Am;Dm7;G',
+    tempo: 130,
+    swing: true
+  },
+  {
+    id: '2',
+    name: '12 Bar Blues',
+    string: '[A] A;A;A;A7;D;D7;A;A7;E7;D7;A;E7',
+    tempo: 150,
+    style: 'jazz',
+    swing: true
+  },
+  {
+    id: '3',
+    name: 'Octavario',
+    string:
+      '[A] Fm;C#m;Fm;Abm;Eb/Bb;Abm6/Bb;Eb/Bb;Abm6;Eb/G;Abm6;Cm/G;D/F#;Bdim;A/E C#m;D;A/E C#m;C;Em;Bb/F Dm;Db;Bb/F;Db;E;G',
+    tempo: 84
+  },
+  {
+    id: '4',
+    name: 'All things',
+    string:
+      '[A] Fm7;Bbm7;Eb7;Abmaj7;Dbmaj7;G7alt;Cmaj7; ;Cm7;Fm7;Bb7;Ebmaj7;Abmaj7;D7;Gmaj7; ;Am7;D7;Gmaj7; ;F#m7;B7;Emaj7;C7+5;Fm7;Bbm7;Eb7;Abmaj7;Dbmaj7;Dbm7;Cm7;Bdim7;Bbm7;Eb7;Abmaj7;G7 C7',
+    tempo: 140,
+    style: 'jazz',
+    swing: true
+  },
+  {
+    id: '5',
+    name: 'Chromatic',
+    string: '[A] Em9;Ebmaj9;C/D;Dbmaj7#11',
+    tempo: 160
+  },
+  {
+    id: 'african',
+    name: 'African',
+    string: '[A] B D#m;G#m G#m/F#;A/E E/F#; !2/4 G#m ; !4/4 A . . C#m',
+    tempo: 98
+  },
+  {
+    id: '7',
+    name: 'Getting lucky',
+    string: '[A] Am7;Cadd9;Em7;D',
+    tempo: 115
+  }
+]
+
+export default presets

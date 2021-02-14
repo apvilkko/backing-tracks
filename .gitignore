@@ -3,3 +3,5 @@ dist
 *.log
 *.log.*
 locals.js
+
+assets/jazzStandards.json

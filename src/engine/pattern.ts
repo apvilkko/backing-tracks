@@ -78,6 +78,7 @@ const iterators = {
     const bassnote = chord.bass
       ? chord.bassNote
       : chord.notes.filter(note => note.role === 'root')[0]
+    //console.log('bassnote', bassnote, chord)
     const offset = chord.bass ? 12 : 0
     if (i % (beatLen * 2) === 0 || (i + 2) % (beatLen * 2) === 0) {
       return createNote(127, pitch + bassnote.midiNote - MIDI_C5 + offset)
@@ -173,7 +174,7 @@ export const createChords = (
       pos += chordLane.length
     }
     if (nextChord) {
-      let notes = nextChord.notes
+      let notes = jazz ? nextChord.voicing || nextChord.notes : nextChord.notes
       if (notes.length > 4) {
         notes = notes.filter(note => note.role !== 'root')
       }

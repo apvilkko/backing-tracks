@@ -36,4 +36,18 @@ export type Chord = {
   bassNote: Note
 }
 
-export type ChordLane = Array<Chord | undefined>
+export type ChordLaneChord = Chord & { _position: number }
+
+export type ChordLane = Array<ChordLaneChord | undefined>
+
+export type TimeSignature = [number, number]
+
+export type Preset = {
+  id: string
+  name: string
+  string: string
+  tempo: number
+  swing?: boolean
+  timeSignature?: TimeSignature
+  style?: string
+}
