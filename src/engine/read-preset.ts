@@ -1,4 +1,5 @@
 import type { Chord, ChordLane, TimeSignature } from "./types"
+import { getBeatLen } from "./util"
 
 type ChordWrapper = {
   chord: Chord
@@ -126,7 +127,7 @@ const readPreset = (value: string, parser, builder, timeSignature: TimeSignature
     }
   }
 
-  const beatLength = Math.round((4 * timeSignature[0]) / timeSignature[1])
+  const beatLength = getBeatLen(timeSignature)
   chords.forEach(item => {
     for (let i = 0; i < item.duration * beatLength; ++i) {
       chordLane.push(

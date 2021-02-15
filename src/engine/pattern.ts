@@ -1,6 +1,6 @@
 import * as T from './tracks'
 import { ChordLane } from './types'
-import { maybe, rand, randRange } from './util'
+import { getBeatLen, maybe, rand, randRange } from './util'
 
 const createNote = (velocity = 0, pitch = null) => ({ velocity, pitch })
 
@@ -125,7 +125,7 @@ const iteratePattern = ({ patternLength, pitch, chordLane, opts }, iterator) =>
 const getOpts = timeSignature => ({
   timeSignature,
   isTriple: timeSignature[1] === 8,
-  beatLen: Math.round((timeSignature[0] * 4) / timeSignature[1])
+  beatLen: getBeatLen(timeSignature)
 })
 
 export const createPattern = ({ track, chordLane, style, timeSignature }) => {

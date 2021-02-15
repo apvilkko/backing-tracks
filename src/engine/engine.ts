@@ -63,10 +63,14 @@ class Engine {
   setPreset(preset: Preset) {
     this.tempo = preset.tempo
     this.style = preset.style || 'default'
-    if (!preset.timeSignature && preset.swing) {
-      this.timeSignature = [12, 8]
-    } else {
-      this.timeSignature = preset.timeSignature || [4, 4]
+    let ts = preset.ts
+    if (ts) {
+      ts = ts.split('/').map(x => Number(x))
+    }
+    this.timeSignature = ts || [4, 4]
+    if (preset.swing && this.timeSignature[1] === 4) {
+      this.timeSignature[0] *= 3
+      this.timeSignature[1] *= 2
     }
     this.setSongFromChordInput(preset.string)
   }

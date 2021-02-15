@@ -24,15 +24,6 @@ const presets: Array<Preset> = [
     tempo: 84
   },
   {
-    id: '4',
-    name: 'All things',
-    string:
-      '[A] Fm7;Bbm7;Eb7;Abmaj7;Dbmaj7;G7alt;Cmaj7; ;Cm7;Fm7;Bb7;Ebmaj7;Abmaj7;D7;Gmaj7; ;Am7;D7;Gmaj7; ;F#m7;B7;Emaj7;C7+5;Fm7;Bbm7;Eb7;Abmaj7;Dbmaj7;Dbm7;Cm7;Bdim7;Bbm7;Eb7;Abmaj7;G7 C7',
-    tempo: 140,
-    style: 'jazz',
-    swing: true
-  },
-  {
     id: '5',
     name: 'Chromatic',
     string: '[A] Em9;Ebmaj9;C/D;Dbmaj7#11',

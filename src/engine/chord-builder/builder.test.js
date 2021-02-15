@@ -142,6 +142,15 @@ describe('Builder', () => {
 
     parser.parse('Cmb6')
     builder.buildChord(parser.model)
-    verify(['C/4', 'Eb/4', /*'Ab/4'*/ 'G#/4'], parser.model.notes)
+    // should really be Ab/4
+    verify(['C/4', 'Eb/4', 'G#/4'], parser.model.notes)
+
+    parser.parse('Dbdim7')
+    builder.buildChord(parser.model)
+    verify(['Db/4', 'Fb/4', 'Abb/4', 'Cbb/5'], parser.model.notes)
+
+    parser.parse('C7b13')
+    builder.buildChord(parser.model)
+    verify(['C/4', 'E/4', 'G/4', 'Bb/4', 'Ab/5'], parser.model.notes)
   })
 })

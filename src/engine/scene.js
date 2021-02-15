@@ -1,6 +1,7 @@
 import * as T from './tracks'
 import { createPattern, createChords } from './pattern'
 import samples from './samples'
+import { getBeatLen } from './util'
 
 const urlify = sample => `samples/${sample}.ogg`
 
@@ -27,7 +28,7 @@ export const createScene = ({
     shufflePercentage,
     parts: {},
     timeSignature,
-    beatLen: Math.round((timeSignature[0] * 4) / timeSignature[1]),
+    beatLen: getBeatLen(timeSignature),
     isTriple: timeSignature[1] === 8
   }
   const keys = [T.BASS, T.RIDE, T.HC, T.SNARE, T.KICK]

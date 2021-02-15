@@ -50,4 +50,5 @@ export type Preset = {
   swing?: boolean
   timeSignature?: TimeSignature
   style?: string
+  [x: string]: unknown
 }

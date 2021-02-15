@@ -31,3 +31,5 @@ export const maybe = (prob: number | Record<any, any>, opt1, opt2) => {
 export function sample<T>(arr: Array<T>): T | undefined {
   return arr.length > 0 ? arr[randRange(0, arr.length - 1)] : undefined
 }
+
+export const getBeatLen = timeSignature => (timeSignature[1] === 8 ? 6 : 4)

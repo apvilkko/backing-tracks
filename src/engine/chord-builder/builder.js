@@ -38,6 +38,7 @@ const NOTES = {
   Bbb: 9,
   'A#': 10,
   Bb: 10,
+  Cbb: 10,
   B: 11,
   'A##': 11,
   Cb: 11
@@ -122,6 +123,7 @@ function getNote(model, distance, role) {
   const acc = model.rootModifier
   const absNote = getAbsNote(root, acc)
   const newNote = absNote + distance
+  //console.log(root, acc, absNote, newNote)
   let newClean = absToNote(newNote, root, distance, model.quality, role)
   if (!newClean && distance === 0) {
     newClean = model.root + (model.rootModifier ? model.rootModifier : '')
@@ -141,7 +143,8 @@ const INTERVAL = {
   4: 5,
   5: 7,
   9: 14,
-  11: 17
+  11: 17,
+  13: 21
 }
 
 const getSeventh = model => (model.quality === 'maj' ? 11 : 10)

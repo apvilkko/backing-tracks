@@ -125,13 +125,18 @@ const output = songs.map(song => {
     .join(' ')
   DEBUG = getDebug(song)
   log(data)
-  return {
+  const out = {
     id: song.id,
     name: song.title,
     string: data,
     tempo: 140,
     swing: true
   }
+  if (song.timeSignature !== '4/4') {
+    // one song in corpus has 3/2. time signature, correct to 3/4
+    out.ts = song.timeSignature.replace('2.', '4')
+  }
+  return out
 })
 
 fs.writeFileSync('assets/jazzStandards.json', JSON.stringify(output))
