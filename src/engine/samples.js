@@ -1,11 +1,11 @@
-import * as T from './tracks';
+import * as T from './tracks'
 
 export default {
-  [T.KICK]: 'BDRM03',
-  [T.SNARE]: 'SNARE01',
-  [T.RIMSHOT]: 'RIMSHOT1',
-  [T.HC]: 'CHH01',
-  [T.RIDE]: 'RIDE01',
-  [T.BASS]: 'bass1',
-  [T.EPIANO]: 'epiano',
-};
+  [T.KICK]: ['kick', ['100', '50']],
+  [T.SNARE]: ['snare', ['100', '50_1', '40', 'roll']],
+  //[T.RIMSHOT]: 'RIMSHOT1',
+  [T.HC]: ['hatpedal'],
+  [T.RIDE]: ['ride', ['edge', '100', '75', '25']],
+  [T.BASS]: ['bass1'],
+  [T.EPIANO]: ['epiano']
+}

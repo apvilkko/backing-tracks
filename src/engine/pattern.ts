@@ -1,6 +1,17 @@
 import * as T from './tracks'
 import { ChordLane } from './types'
-import { getBeatLen, maybe, rand, randRange } from './util'
+import { getBeatLen, maybe, rand, randRange, sample } from './util'
+import samples from './samples'
+
+export const urlify = (sample: string) => `samples/${sample}.ogg`
+
+export const getSamples = (track: string) => {
+  const spec = samples[track]
+  if (spec.length === 1) {
+    return spec
+  }
+  return spec[1].map(x => `${spec[0]}_${x}`)
+}
 
 const createNote = (velocity = 0, pitch = null) => ({ velocity, pitch })
 
@@ -34,6 +45,63 @@ const getNextChordDistance = (lane, i) => {
 
 const MIDI_C5 = 60
 const MIDI_F5 = 65
+
+const getPatternNote = (
+  pattern,
+  i: number,
+  beatLen: number,
+  isBeat,
+  offBeat
+) => {
+  if (!isBeat && !offBeat) {
+    return undefined
+  }
+  const patternStepLen = beatLen / 2
+  const patternLenTicks = patternStepLen * pattern.length
+  const currentPos = Math.floor((i % patternLenTicks) / patternStepLen)
+  //console.log(pattern, i, patternStepLen, patternLenTicks, currentPos)
+  return pattern[currentPos]
+}
+
+const handlePattern = (opts, key, i, pitch) => {
+  const {
+    state: { currentPattern, setPattern, clearPattern },
+    beatLen,
+    beatInfo: { isBeat, offBeat, isStartOfMeasure }
+  } = opts
+  let pattern = currentPattern
+  let started = false
+  const patternAuth = key === T.KICK
+  let triggerPattern
+  if (isStartOfMeasure && patternAuth) {
+    triggerPattern = rand(20)
+  }
+  if (!currentPattern && triggerPattern) {
+    pattern = setPattern()
+    console.log('started pattern', i, pattern)
+    started = true
+  }
+  if (pattern && pattern[key]) {
+    if (!started && isStartOfMeasure && patternAuth) {
+      console.log('cleared pattern', i)
+      clearPattern()
+    }
+    const patternNote = getPatternNote(
+      pattern[key],
+      i,
+      beatLen,
+      isBeat,
+      offBeat
+    )
+    if (patternNote) {
+      return createNote(
+        patternNote === 1 ? randRange(70, 99) : patternNote,
+        pitch
+      )
+    }
+    return createNote()
+  }
+}
 
 const iterators = {
   default: {},
@@ -85,42 +153,85 @@ const iterators = {
     }
     return createNote()
   },
-  [T.RIDE]: (i, pitch, lane, { beatLen }) => {
+  [T.RIDE]: (i, pitch, lane, { beatLen, beatInfo: { isFillAccent } }) => {
     const weak = (i + 2) % (beatLen * 2) === 0
+    if (isFillAccent && rand(20)) {
+      console.log('fill ride')
+      return createNote(randRange(110, 127), pitch)
+    }
     if (i % beatLen === 0 || weak) {
-      return createNote(weak ? randRange(64, 90) : 127, pitch)
+      return createNote(weak ? randRange(30, 64) : randRange(70, 108), pitch)
     }
     return createNote()
   },
-  [T.HC]: (i, pitch, label, { beatLen }) => {
+  [T.HC]: (i, pitch, lane, opts) => {
+    const { beatLen } = opts
+    const ret = handlePattern(opts, T.HC, i, pitch)
+    if (ret) {
+      return ret
+    }
     if ((i + beatLen) % (beatLen * 2) === 0) {
-      return createNote(127, pitch)
+      return createNote(randRange(85, 108), pitch)
     }
     return createNote()
   },
-  [T.KICK]: (i, pitch, label, { beatLen, isTriple }) => {
-    const isBeat = i % beatLen === 0
-    const offBeat = (i + 2) % beatLen === 0
+  [T.KICK]: (i, pitch, lane, opts) => {
+    const {
+      beatInfo: { isBeat, offBeat, isFillAccent }
+    } = opts
+
+    if (isFillAccent && rand(15)) {
+      console.log('fill kick')
+      return createNote(randRange(110, 127), pitch)
+    }
+
+    const ret = handlePattern(opts, T.KICK, i, pitch)
+    if (ret) {
+      return ret
+    }
     if ((isBeat || offBeat) && rand(5)) {
-      return createNote(randRange(10, 110), pitch)
+      return createNote(randRange(20, 109), pitch)
     }
     return createNote()
   },
-  [T.SNARE]: (i, pitch, label, { beatLen, isTriple }) => {
-    const isBeat = i % beatLen === 0
-    const offBeat = (i + 2) % beatLen === 0
+  [T.SNARE]: (i, pitch, lane, opts) => {
+    const {
+      beatLen,
+      isTriple,
+      beatInfo: { offBeat, isBeat, isFillAccent }
+    } = opts
+    if (isFillAccent && rand(20)) {
+      console.log('fill snare')
+      return createNote(randRange(110, 126), pitch)
+    }
+
+    const ret = handlePattern(opts, T.SNARE, i, pitch)
+    if (ret) {
+      return ret
+    }
+
     const mid = isTriple && (i - 2) % beatLen === 0
     if ((offBeat && rand(10)) || (isBeat && rand(5)) || (mid && rand(3))) {
-      return createNote(randRange(10, 110), pitch)
+      const roll = rand(5)
+      return createNote(roll ? 127 : randRange(20, 109), pitch)
     }
     return createNote()
   }
 }
 
 const iteratePattern = ({ patternLength, pitch, chordLane, opts }, iterator) =>
-  Array.from({ length: patternLength }).map((_, index) =>
-    iterator(index, pitch, chordLane, opts)
-  )
+  Array.from({ length: patternLength }).map((_, i) => {
+    const { beatLen } = opts
+    const isBeat = i % beatLen === 0
+    const isStartOfMeasure =
+      isBeat && i % (opts.timeSignature[0] * beatLen) === 0
+    const beatInfo = {
+      isBeat,
+      offBeat: (i + 2) % beatLen === 0,
+      isStartOfMeasure
+    }
+    return iterator(i, pitch, chordLane, { ...opts, beatInfo })
+  })
 
 const getOpts = timeSignature => ({
   timeSignature,
@@ -128,18 +239,25 @@ const getOpts = timeSignature => ({
   beatLen: getBeatLen(timeSignature)
 })
 
-export const createPattern = ({ track, chordLane, style, timeSignature }) => {
+export const createPattern = ({
+  track,
+  chordLane,
+  style,
+  timeSignature,
+  state
+}) => {
   const pitch = 0
   const patternLength = chordLane.length
   const iter = iterators[style][track]
     ? iterators[style][track]
     : iterators[track]
+
   return iteratePattern(
     {
       patternLength,
       pitch,
       chordLane,
-      opts: getOpts(timeSignature)
+      opts: { ...getOpts(timeSignature), state }
     },
     iter
   )
@@ -149,7 +267,7 @@ export const createChords = (
   scene,
   chordLane,
   key,
-  sample,
+  samples,
   timeSignature,
   style
 ) => {
@@ -188,7 +306,90 @@ export const createChords = (
   voices.forEach((voice, i) => {
     const voiceKey = `${key}${voice}`
     scene.parts[voiceKey] = {
-      sample,
+      samples,
+      pattern: patterns[i]
+    }
+  })
+}
+
+const drumPatterns = [
+  'sh-ssh-k',
+  'sssh-hsk',
+  '-hsh-hsh',
+  '-s-ksh-k',
+  '-sshshk-',
+  'shksshk-',
+  'shsh-sks',
+  '-hkssksh'
+].map(x => ({
+  [T.SNARE]: x.split('').map(c => (c === 's' ? 1 : 0)),
+  [T.KICK]: x.split('').map(c => (c === 'k' ? 1 : 0)),
+  [T.HC]: x.split('').map(c => (c === 'h' ? 1 : 0))
+}))
+
+export const createDrums = (scene, chordLane, timeSignature, style) => {
+  const voices = [T.KICK, T.SNARE, T.HC, T.RIDE]
+
+  const state = {
+    currentPattern: undefined
+  }
+  state.setPattern = () => {
+    const p = sample(drumPatterns)
+    state.currentPattern = p
+    return p
+  }
+  state.clearPattern = () => {
+    state.currentPattern = undefined
+  }
+
+  const opts = { ...getOpts(timeSignature), state }
+  const jazz = opts.isTriple && style === 'jazz'
+
+  const patternLength = chordLane.length
+  const pitch = 0
+
+  const patterns = voices.map(track =>
+    Array.from({ length: patternLength }).map((_, i) => undefined)
+  )
+
+  Array.from({ length: patternLength }).map((_, i) => {
+    voices.forEach((track, v) => {
+      const iter = iterators[style][track]
+        ? iterators[style][track]
+        : iterators[track]
+
+      const { beatLen } = opts
+      const isBeat = i % beatLen === 0
+      const offBeat = (i + 2) % beatLen === 0
+      const beatsPerBar =
+        opts.timeSignature[1] === 4
+          ? opts.timeSignature[0]
+          : opts.timeSignature[0] === 12 || opts.timeSignature[0] === 9
+          ? 4
+          : 4
+      const measure = i / (beatsPerBar * beatLen)
+      const currentMeasure = Math.floor(measure) + 1
+      const currentBarProgress = 1 - (currentMeasure - measure)
+      const isStartOfMeasure =
+        isBeat && i % (opts.timeSignature[0] * beatLen) === 0
+      const isFillAccent =
+        offBeat && currentMeasure % 4 === 0 && currentBarProgress > 0.9
+      const beatInfo = {
+        isBeat,
+        offBeat,
+        isStartOfMeasure,
+        isFillAccent
+      }
+      patterns[v][i] = iter(i, pitch, chordLane, { ...opts, beatInfo })
+    })
+  })
+
+  for (let i = 0; i < chordLane.length; ++i) {}
+  voices.forEach((voice, i) => {
+    const samples = getSamples(voice)
+    scene.parts[voice] = {
+      style,
+      samples: samples.map(urlify),
       pattern: patterns[i]
     }
   })

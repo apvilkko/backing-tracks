@@ -1,17 +1,18 @@
 import * as T from './tracks'
-import { createPattern, createChords } from './pattern'
-import samples from './samples'
+import {
+  createPattern,
+  createChords,
+  createDrums,
+  getSamples,
+  urlify
+} from './pattern'
 import { getBeatLen } from './util'
 
-const urlify = sample => `samples/${sample}.ogg`
-
-const getSample = track => samples[track]
-
 const createPart = (track, chordLane, style, timeSignature) => {
-  const sample = getSample(track)
+  const samples = getSamples(track)
   return {
     style,
-    sample: urlify(sample),
+    samples: samples.map(urlify),
     pattern: createPattern({ track, style, chordLane, timeSignature })
   }
 }
@@ -31,15 +32,16 @@ export const createScene = ({
     beatLen: getBeatLen(timeSignature),
     isTriple: timeSignature[1] === 8
   }
-  const keys = [T.BASS, T.RIDE, T.HC, T.SNARE, T.KICK]
+  const keys = [T.BASS]
   keys.forEach(key => {
     newScene.parts[key] = createPart(key, chordLane, style, timeSignature)
   })
+  createDrums(newScene, chordLane, timeSignature, style)
   createChords(
     newScene,
     chordLane,
     T.EPIANO,
-    urlify(getSample(T.EPIANO)),
+    getSamples(T.EPIANO).map(urlify),
     timeSignature,
     style
   )

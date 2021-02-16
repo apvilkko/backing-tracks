@@ -94,7 +94,7 @@ export const createEngine = () => {
   const engine = new Engine()
   setTimeout(() => {
     if (process.env.NODE_ENV === 'development') {
-      engine.setPreset(presets[3])
+      engine.setPreset(presets[1])
     }
   }, 500)
 
