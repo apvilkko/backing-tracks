@@ -17,6 +17,9 @@ const convertChord = x => {
     return `${convertChord(parts[0])}/${cleanBassNote(parts[1])}`
   }
   return parts[0]
+    .replace('^9', 'maj9')
+    .replace('^7', 'maj7')
+    .replace('^', 'maj')
     .replace('h7', 'm7b5')
     .replace('-:', 'b')
     .replace('-', 'b')

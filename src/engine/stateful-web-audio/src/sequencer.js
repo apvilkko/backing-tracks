@@ -1,7 +1,7 @@
 import { commit } from './state'
 import { playNote } from './player'
 import { getContext } from './util'
-import { KICK, RIDE, SNARE, HC } from '../../tracks'
+import { KICK, RIDE, SNARE, HC, BASS } from '../../tracks'
 
 const WORKER_TICK_LEN = 0.2
 
@@ -37,7 +37,13 @@ const scheduleNote = (ctx, delta) => {
   const currentNote = runtime.sequencer.currentNote
   const scene = state.scene
   Object.keys(scene.parts).forEach(key => {
-    const noRelease = [SNARE, KICK, HC, RIDE].includes(key)
+    const gen = scene.parts[key].generator
+    if (!gen) {
+      return
+    }
+    const note = gen.next(currentNote).value
+    const thisNoteLen = key === BASS ? 6 : undefined
+    /*const noRelease = [SNARE, KICK, HC, RIDE].includes(key)
     const track = scene.parts[key].pattern
     const index = currentNote % track.length
     const note = track[index]
@@ -46,8 +52,8 @@ const scheduleNote = (ctx, delta) => {
       ? undefined
       : nextNoteIndex > index
       ? nextNoteIndex - index
-      : nextNoteIndex + track.length - index
-    if (note.velocity) {
+      : nextNoteIndex + track.length - index*/
+    if (note && note.velocity) {
       playNote(ctx, key, note, thisNoteLen, delta)
     }
   })
