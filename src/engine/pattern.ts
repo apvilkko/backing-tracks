@@ -501,24 +501,26 @@ const iterators: Iterators = {
   },
   [T.BASS]: (i, pitch, lane, { beatLen }) => {
     const chord = getCurrentChord(lane, i)
-    const bassnotes = chord.bass
-      ? { root: chord.bassNote }
-      : chord.notes
-          .filter(
-            note =>
-              note.role === 'root' ||
-              note.role === 'fifth' ||
-              note.role === 'third'
-          )
-          .reduce((acc, c) => {
-            acc[c.role] = c
-            return acc
-          }, {})
-    const bassnote = bassnotes.root
-    //console.log('bassnote', bassnote, chord)
-    const offset = chord.bass ? 12 : 0
-    if (i % (beatLen * 2) === 0 || (i + 2) % (beatLen * 2) === 0) {
-      return createNote(127, pitch + bassnote.midiNote - MIDI_C5 + offset)
+    if (chord) {
+      const bassnotes = chord.bass
+        ? { root: chord.bassNote }
+        : chord.notes
+            .filter(
+              note =>
+                note.role === 'root' ||
+                note.role === 'fifth' ||
+                note.role === 'third'
+            )
+            .reduce((acc, c) => {
+              acc[c.role] = c
+              return acc
+            }, {})
+      const bassnote = bassnotes.root
+      //console.log('bassnote', bassnote, chord)
+      const offset = chord.bass ? 12 : 0
+      if (i % (beatLen * 2) === 0 || (i + 2) % (beatLen * 2) === 0) {
+        return createNote(127, pitch + bassnote.midiNote - MIDI_C5 + offset)
+      }
     }
     return createNote()
   },
