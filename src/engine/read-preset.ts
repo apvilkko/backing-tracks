@@ -4,6 +4,7 @@ import { getBeatLen } from "./util"
 type ChordWrapper = {
   chord: Chord
   duration: number
+  section: string | undefined
 }
 
 const getNextToken = (str: string) => {
@@ -22,6 +23,13 @@ const getNextToken = (str: string) => {
     }
   }
   return str.substring(0, index)
+}
+
+const markSection = (arr, section) => {
+  if (arr.length) {
+    arr[0].section = section
+  }
+  return arr
 }
 
 const getBeatsPerBar = (ts : TimeSignature) => Math.round(ts[0] / (ts[1] === 8 ? 3 : 1))
@@ -62,7 +70,7 @@ const readPreset = (value: string, parser, builder, timeSignature: TimeSignature
       } else {
         // Repeated section
         const {start, end} = sections[currentSection]
-        chords = chords.concat(chords.slice(start, end))
+        chords = chords.concat(markSection(chords.slice(start, end), currentSection))
       }
       pos += section[0].length
       handled = true
@@ -74,8 +82,10 @@ const readPreset = (value: string, parser, builder, timeSignature: TimeSignature
         //console.log('repeating last', shouldFinish, c)
         // empty bar, repeat last
         const lastChord = chords[chords.length -1]
-        chords.push({...lastChord, duration})
+        chords.push({...lastChord, duration, section: undefined})
       }
+      let addedChords = 0;
+      const startingLength = chords.length
       for (let i = 0; i < tokens.length; ++i) {
         const t = tokens[i]
         //console.log('process token', t)
@@ -86,10 +96,17 @@ const readPreset = (value: string, parser, builder, timeSignature: TimeSignature
           parser.parse(t.replace(/\([^)]+\)/, ''))
           builder.buildChord(parser.model)
           //console.log('builder model', t, builder.model)
+          let startsSection = undefined
+          if (sections[currentSection]?.start === startingLength + addedChords) {
+            startsSection = currentSection
+          }
+
           chords.push({
             chord: {...builder.model, name: parser.toString()},
-            duration
+            duration,
+            section: startsSection
           })
+          addedChords++;
         }
       }
       tokens = []
@@ -131,7 +148,7 @@ const readPreset = (value: string, parser, builder, timeSignature: TimeSignature
   chords.forEach(item => {
     for (let i = 0; i < item.duration * beatLength; ++i) {
       chordLane.push(
-        i === 0 ? { ...item.chord, _position: chordLane.length } : undefined
+        i === 0 ? { ...item.chord, _position: chordLane.length, section: item.section } : undefined
       )
     }
   })

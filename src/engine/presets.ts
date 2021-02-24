@@ -2,6 +2,14 @@ import type { Preset } from "./types"
 
 const presets: Array<Preset> = [
   {
+    id: '11',
+    name: 'Jazz 2 beat changes',
+    string: '[A] C ; ; D7; ; C C/B;Am7 E/G#;C/G Fmaj7;Dm7 G7alt [N1] C9 F#dim7; C9 . Ab7 G7 [A] [N1]',
+    tempo: 160,
+    swing: true,
+    style: 'jazz',
+  },
+  {
     id: '1',
     name: 'Basic I-vi-ii7-V',
     string: '[A] C;Am;Dm7;G',

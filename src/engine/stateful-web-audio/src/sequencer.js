@@ -130,3 +130,7 @@ export const setSeqLength = (ctx, value) => {
 }
 
 export const isPlaying = ctx => ctx.state.sequencer.playing
+
+export const reset = ctx => {
+  ctx.runtime.sequencer.currentNote = -3
+}

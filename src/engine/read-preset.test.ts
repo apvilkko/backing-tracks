@@ -8,7 +8,7 @@ const builder = new ChordBuilder()
 
 describe('readPreset', () => {
   it('works', () => {
-    const value = presets[0].string
+    const value = presets.find(x => x.id === '1').string
     const result = readPreset(value, parser, builder, [4, 4])
     const filtered = result.filter(x => !!x)
     expect(filtered.map(x => x._position)).toEqual([0, 16, 32, 48])
@@ -34,16 +34,28 @@ describe('readPreset', () => {
   })
 
   it('works, repeated section', () => {
-    const value = '[A1] G7;A7 [B] C;D [A1]'
+    const value = '[A1] G7; ;A7 [B] C;D [A1]'
     const result = readPreset(value, parser, builder, [4, 4])
     const filtered = result.filter(x => !!x)
     expect(filtered.map(x => x.name)).toEqual([
+      'G7',
       'G7',
       'A7',
       'C',
       'D',
       'G7',
+      'G7',
       'A7'
+    ])
+    expect(filtered.map(x => x.section)).toEqual([
+      'A1',
+      undefined,
+      undefined,
+      'B',
+      undefined,
+      'A1',
+      undefined,
+      undefined
     ])
   })
 })

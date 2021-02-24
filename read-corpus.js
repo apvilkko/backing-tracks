@@ -115,9 +115,11 @@ const output = songs.map(song => {
       }
       const out = `[${sect}] ${song.sections[sect]
         .map(bar => {
+          const durations = new Set(bar.map(x => x[1]))
+          const multiLen = durations.size > 1
           return bar
             .map(chord => {
-              return chord[0]
+              return multiLen && chord[1] !== '4' ? `${chord[0]} .` : chord[0]
             })
             .join(' ')
         })

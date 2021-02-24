@@ -7,7 +7,7 @@
         v-for="item in chords"
         v-bind:class="{ playback: isCurrent(item), split: shouldSplit(item) }"
       >
-        {{ item.name }}
+        {{ item.section ? `[${item.section}] ` : '' }}{{ item.name }}
       </li>
     </ul>
   </div>

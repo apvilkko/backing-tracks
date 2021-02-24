@@ -36,7 +36,10 @@ export type Chord = {
   bassNote: Note
 }
 
-export type ChordLaneChord = Chord & { _position: number }
+export type ChordLaneChord = Chord & {
+  _position: number
+  section: string | undefined
+}
 
 export type ChordLane = Array<ChordLaneChord | undefined>
 

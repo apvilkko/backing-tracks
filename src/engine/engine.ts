@@ -1,10 +1,11 @@
 import ChordParser from './chord-builder/parser'
 import ChordBuilder from './chord-builder/builder'
-import { initCtx, newScene, toggle } from './audio'
+import { initCtx, newScene, toggle, reset } from './audio'
 import presets from './presets'
 import { setScene } from './stateful-web-audio'
 import { ChordLane, Preset } from './types'
 import { readPreset } from './read-preset'
+import { clearBassMemory } from './pattern'
 
 class Engine {
   chordLane: ChordLane
@@ -22,6 +23,14 @@ class Engine {
     }
   }
 
+  playFromStart(play?: boolean) {
+    reset(this.ctx)
+    clearBassMemory()
+    if (play !== false) {
+      this.toggle(true)
+    }
+  }
+
   reset() {
     this.key = null
     this.tempo = 120
@@ -31,8 +40,8 @@ class Engine {
     this.style = 'default'
   }
 
-  toggle() {
-    toggle(this.ctx)
+  toggle(state?: boolean) {
+    toggle(this.ctx, state)
   }
 
   setTempo(value) {
@@ -54,6 +63,7 @@ class Engine {
       timeSignature: this.timeSignature
     })
     //toggle(this.ctx);
+    this.playFromStart(false)
   }
 
   getPreset(presetId: string): Preset | undefined {
@@ -61,6 +71,7 @@ class Engine {
   }
 
   setPreset(preset: Preset) {
+    this.toggle(false)
     this.tempo = preset.tempo
     this.style = preset.style || 'default'
     let ts = preset.ts
@@ -94,9 +105,14 @@ export const createEngine = () => {
   const engine = new Engine()
   setTimeout(() => {
     if (process.env.NODE_ENV === 'development') {
-      engine.setPreset(presets[1])
+      engine.setPreset(presets[0])
     }
   }, 500)
+  setTimeout(() => {
+    if (process.env.NODE_ENV === 'development') {
+      engine.toggle()
+    }
+  }, 520)
 
   return engine
 }

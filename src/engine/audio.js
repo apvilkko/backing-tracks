@@ -6,7 +6,8 @@ import {
   play,
   pause,
   isPlaying,
-  setSeqLength
+  setSeqLength,
+  reset as seqReset
 } from './stateful-web-audio'
 import * as T from './tracks'
 import { createScene } from './scene'
@@ -17,8 +18,8 @@ export const newScene = (ctx, opts) => {
   setScene(ctx, scene)
 }
 
-export const toggle = ctx => {
-  const playing = isPlaying(ctx)
+export const toggle = (ctx, state) => {
+  const playing = typeof state === 'boolean' ? !state : isPlaying(ctx)
   if (playing) {
     pause(ctx)
   } else {
@@ -27,7 +28,11 @@ export const toggle = ctx => {
   return !playing
 }
 
-const pGain = 0.4
+export const reset = ctx => {
+  seqReset(ctx)
+}
+
+const pGain = 0.1
 
 export const initCtx = () => {
   const ctx = init()

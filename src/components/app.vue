@@ -7,6 +7,7 @@
     <chord-lane :lane="engine.chordLane" :position="chordPosition" />
     <div>
       <button @click="toggle">play/pause</button>
+      <button @click="playFromStart">play from 0</button>
     </div>
     <!-- <pre>{{engine.ctx}}</pre> -->
   </div>
@@ -57,6 +58,9 @@ export default {
     },
     toggle() {
       this.engine.toggle()
+    },
+    playFromStart() {
+      this.engine.playFromStart()
     }
   }
 }

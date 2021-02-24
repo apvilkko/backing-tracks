@@ -1,6 +1,6 @@
 import * as T from './tracks'
 import { ChordLane, ChordLaneChord, Note, TimeSignature } from './types'
-import { getBeatLen, maybe, rand, randRange, sample } from './util'
+import { getBeatLen, rand, randRange, sample } from './util'
 import samples from './samples'
 
 export const urlify = (sample: string) => `samples/${sample}.ogg`
@@ -41,7 +41,7 @@ const getNextChords = (
   index: number,
   lookAhead: number
 ): Array<NextChordType> => {
-  let p = index
+  let p = index - 2
   const out: Array<NextChordType> = []
   while (p <= index + lookAhead) {
     const i = p % lane.length
@@ -160,34 +160,128 @@ const getLookAhead = (
 
 type NoteProps = { note: Note; offset?: number }
 
-const selectBassNote = (chord: ChordLaneChord): NoteProps => {
+const BASS_LOWEST = 28 // E1
+
+const noteAdjustment = (note: number) => {
+  if (note <= BASS_LOWEST + 24) {
+    return note + 12
+  } else if (note > 75) {
+    return note + -12
+  }
+  return note
+}
+
+const withOffset = (noteProps: NoteProps, isBass?: boolean) => {
+  let offset = isBass ? 12 : 0
+  if (rand(50)) {
+    // Change octave
+    let jump = rand(50) ? -12 : 12
+    const resultingNote = noteProps.note.midiNote + jump + offset
+    offset += noteAdjustment(resultingNote) - resultingNote
+  }
+  //console.log('offset', noteProps.note.midiNote, offset)
+  return { ...noteProps, offset }
+}
+
+const selectBassNote = (chord: ChordLaneChord, isFirst: boolean): NoteProps => {
   if (chord.bass) {
-    return { note: chord.bassNote, offset: 12 }
+    const bassNote = chord.bassNote
+    return withOffset({ note: bassNote }, true)
   }
   const root = chord.notes.filter(note => note.role === 'root')[0]
   const third = chord.notes.filter(note => note.role === 'third')[0]
   const fifth = chord.notes.filter(note => note.role === 'fifth')[0]
   let note = root
-  if (rand(75)) {
-    // pass
-  } else {
+  if (rand(isFirst ? 1 : 20)) {
     if (rand(75)) {
       note = third || root
     } else {
       note = fifth || third || root
     }
   }
+  return withOffset({ note })
+}
+
+const selectLeadingTone = (
+  nextNote: Note,
+  nextChord: ChordLaneChord
+): NoteProps => {
+  let note
+  if (rand(75)) {
+    note = { midiNote: nextNote.midiNote + (rand(50) ? 1 : -1) }
+  } else {
+    const nextBn = selectBassNote(nextChord, true)
+    note = { midiNote: nextBn.note.midiNote + (rand(50) ? 7 : -5) }
+  }
+
   return { note }
 }
 
-const selectLeadingTone = (nextNote: Note): NoteProps => {
-  const note = { midiNote: nextNote.midiNote + (rand(50) ? 1 : -1) }
-  return { note }
+type MemItem = { pos: number; chord: ChordLaneChord } & NoteProps
+
+const isWaltz = (ts: TimeSignature) => ts[0] === 9 && ts[1] === 8
+
+const getPrimaryBassNote = (mem: MemItem): Note => {
+  if (mem.note) {
+    return mem.note
+  }
+  if (mem.chord) {
+    return mem.chord.bass
+      ? mem.chord.bassNote
+      : mem.chord.notes.filter(note => note.role === 'root')[0]
+  }
+  return undefined
 }
 
 type BassState = {
   memorySet: number | undefined
-  memory: Array<{ pos: number; chord?: ChordLaneChord } & NoteProps>
+  memory: Array<MemItem>
+}
+
+const walkLines = (
+  maj?: boolean,
+  dom?: boolean
+): Record<string, Array<Array<number>>> => ({
+  '5': [
+    [2, 3, 4],
+    [2, 7, 6],
+    [0, 2, maj ? 4 : 3],
+    [1, 2, maj ? 4 : 3]
+  ],
+  '-7': [
+    [-2, -3, -5],
+    [-2, -4, -6] // alt
+  ],
+  '7': [
+    [2, maj ? 4 : 3, 5],
+    [maj ? 4 : 3, 5, 6]
+  ],
+  '-5': [
+    [-1, -2, -3],
+    [dom ? -2 : -1, -3, -4]
+  ]
+})
+
+const sameLines = (fifth: number, maj?: boolean, dom?: boolean) => {
+  const th = maj ? 4 : 3
+  const sv = dom ? -2 : -1
+  const sx = maj ? -3 : -4
+  return [
+    [th, th - 1, th],
+    [2, th, 2],
+    [0, th, fifth],
+    [0, fifth, fifth],
+    [sv, sx, fifth],
+    [0, 2, 2],
+    [fifth, 12, fifth]
+  ]
+}
+
+const isMajor = (chord: ChordLaneChord) => {
+  if (chord.quality === 'm' || chord.quality === 'dim') {
+    return false
+  }
+  return true
 }
 
 const sortMemory = arr =>
@@ -208,41 +302,172 @@ const iterators: Iterators = {
 
       if (!state.memorySet) {
         // First place chord changes
+        const chordPositions: Record<number, boolean> = {}
         for (let c = 0; c < nextChords.length; ++c) {
           const nc = nextChords[c].chord
-          const noteProps = selectBassNote(nc)
-          state.memory.push({ pos: nextChords[c].at, chord: nc, ...noteProps })
+          const pos = nextChords[c].at
+          const laneIndex = pos % lane.length
+          const isFirst = laneIndex === 0 || !!lane[laneIndex]?.section
+          const noteProps = selectBassNote(nc, isFirst)
+          chordPositions[pos] = true
+          state.memory.push({ pos, chord: nc, ...noteProps })
         }
-        // Then place leading tones
-        for (let c = 0; c < nextChords.length; ++c) {
+
+        // Check for chord staying the same
+        let startingLength = state.memory.length
+        for (let c = 0; c < startingLength; ++c) {
           const mem = state.memory[c]
-          const pos = mem.pos - beatLen
-          if (pos % lane.length >= i) {
-            const noteProps = selectLeadingTone(mem.note)
-            state.memory.push({ pos, ...noteProps })
-          }
-        }
-        state.memory = sortMemory(state.memory)
-        // Fill out gaps
-        for (let c = 0; c < state.memory.length; ++c) {
-          const mem = state.memory[c]
-          const nextMem = state.memory[c + 1]
-          if (mem && nextMem) {
+          const nextIndex = c + 1
+          const nextMem =
+            state.memory[
+              nextIndex < startingLength ? nextIndex : state.memory.length
+            ]
+          if (mem && nextMem && mem.chord.name === nextMem.chord.name) {
             const numBeats = Math.floor((nextMem.pos - (mem.pos + 1)) / beatLen)
-            const noteDifference = nextMem.note.midiNote - mem.note.midiNote
-            if (numBeats && Math.abs(noteDifference) === numBeats + 1) {
-              // direct chromatic walk possible
-              console.log('chromatic walk', mem, nextMem)
+            if (numBeats === 3 && rand(75)) {
+              const isMaj = isMajor(mem.chord)
+              let fifth = 7
+              if (mem.chord.quality === 'dim' || mem.chord.quality === 'alt') {
+                fifth--
+              } else if (mem.chord.quality === 'aug') {
+                fifth++
+              }
+              const pattern = sample(
+                sameLines(fifth, isMaj, mem.chord.quality !== 'maj')
+              )
               for (let x = 0; x < numBeats; ++x) {
                 const newNote = {
                   pos: mem.pos + beatLen * (x + 1),
                   note: {
-                    midiNote:
+                    midiNote: noteAdjustment(mem.note.midiNote + pattern[x])
+                  },
+                  chord: mem.chord
+                }
+                state.memory.push(newNote)
+              }
+            }
+          }
+        }
+        state.memory = sortMemory(state.memory)
+
+        // Check for 4th/5th movements or possible repeats in descending/ascending lines
+        startingLength = state.memory.length
+        for (let c = 0; c < startingLength; ++c) {
+          const mem = state.memory[c]
+          const nextIndex = c + 1
+          const nextMem =
+            state.memory[
+              nextIndex < startingLength ? nextIndex : state.memory.length
+            ]
+          if (mem && nextMem) {
+            const numBeats = Math.floor((nextMem.pos - (mem.pos + 1)) / beatLen)
+            const noteDifference =
+              getPrimaryBassNote(nextMem).midiNote -
+              getPrimaryBassNote(mem).midiNote
+            const noteDiff = Math.abs(noteDifference) % 12
+            if (
+              numBeats === 3 &&
+              (noteDiff === 7 || noteDiff === 5) &&
+              mem.note.role === 'root' &&
+              nextMem.note.role === 'root' &&
+              rand(50)
+            ) {
+              const isMaj = isMajor(mem.chord)
+              const pattern = sample(
+                walkLines(isMaj, mem.chord.quality !== 'maj')[
+                  String(noteDifference)
+                ]
+              )
+              for (let x = 0; x < numBeats; ++x) {
+                const newNote = {
+                  pos: mem.pos + beatLen * (x + 1),
+                  note: {
+                    midiNote: noteAdjustment(mem.note.midiNote + pattern[x])
+                  },
+                  chord: mem.chord
+                }
+                state.memory.push(newNote)
+              }
+            } else if (
+              numBeats === 1 &&
+              rand(75) &&
+              (noteDiff === 1 ||
+                noteDiff === 2 ||
+                noteDiff === 10 ||
+                noteDiff === 11)
+            ) {
+              // Repeat, or change octave
+              const jump = rand(50) ? 12 : -12
+              const offset = rand(5) ? jump : 0
+              const pos = mem.pos + beatLen
+              if (pos % beatLen === 0) {
+                const midiNote = noteAdjustment(mem.note.midiNote + offset)
+                const newNote = {
+                  pos,
+                  note: { midiNote },
+                  chord: mem.chord
+                }
+                state.memory.push(newNote)
+              }
+            }
+          }
+        }
+        state.memory = sortMemory(state.memory)
+
+        // Place leading tones
+        startingLength = state.memory.length
+        for (let c = 0; c < startingLength; ++c) {
+          const mem = state.memory[c]
+          const pos = mem.pos - beatLen
+          if (
+            !chordPositions[pos] &&
+            pos % lane.length >= i &&
+            pos % beatLen === 0
+          ) {
+            const noteProps = selectLeadingTone(mem.note, mem.chord)
+            state.memory.push({ pos, chord: mem.chord, ...noteProps })
+          }
+        }
+        state.memory = sortMemory(state.memory)
+
+        // Fill out gaps
+        startingLength = state.memory.length
+        for (let c = 0; c < startingLength; ++c) {
+          const mem = state.memory[c]
+          const nextIndex = c + 1
+          const nextMem =
+            state.memory[
+              nextIndex < startingLength ? nextIndex : state.memory.length
+            ]
+          if (mem && nextMem) {
+            const numBeats = Math.floor((nextMem.pos - (mem.pos + 1)) / beatLen)
+            const noteDifference = nextMem.note.midiNote - mem.note.midiNote
+            const noteDiff = Math.abs(noteDifference)
+            const semitoneStep = noteDiff === numBeats + 1
+            if (numBeats && semitoneStep) {
+              // direct chromatic walk possible
+              for (let x = 0; x < numBeats; ++x) {
+                const newNote = {
+                  pos: mem.pos + beatLen * (x + 1),
+                  note: {
+                    midiNote: noteAdjustment(
                       mem.note.midiNote +
-                      (x + 1) * (noteDifference > 1 ? 1 : -1)
+                        (x + 1) * (noteDifference > 1 ? 1 : -1)
+                    )
                   }
                 }
-                console.log(newNote)
+                state.memory.push(newNote)
+              }
+            } else {
+              for (let x = 0; x < numBeats; ++x) {
+                const newNote = {
+                  pos: mem.pos + beatLen * (x + 1),
+                  note: sample(
+                    mem.chord.notes.filter(x =>
+                      ['root', 'third', 'fifth'].includes(x.role)
+                    )
+                  )
+                }
                 state.memory.push(newNote)
               }
             }
@@ -271,32 +496,6 @@ const iterators: Iterators = {
         }
       }
 
-      /*if (
-        beat &&
-        chord.root !== nextChord.chord.root &&
-        nextChord.distance <= beatLen + 1
-      ) {
-        // leading tone
-        const nc = nextChord.chord
-        bassnote = nc.bass
-          ? nc.bassNote
-          : nc.notes.filter(note => note.role === 'root')[0]
-        offset = (nc.bass ? 12 : 0) + maybe(50, 1, -1)
-        return createNote(127, pitch + bassnote.midiNote - MIDI_C5 + offset)
-      } else if ((i + beatLen) % (beatLen * 2) === 0) {
-        const fifth = chord.notes.filter(note => note.role === 'fifth')
-        const third = chord.notes.filter(note => note.role === 'third')
-        if (fifth && rand(33)) {
-          bassnote = fifth[0]
-          offset = 0
-        } else if (third && rand(50)) {
-          bassnote = third[0]
-          offset = 0
-        }
-        return createNote(127, pitch + bassnote.midiNote - MIDI_C5 + offset)
-      } else if (beat) {
-        return createNote(127, pitch + bassnote.midiNote - MIDI_C5 + offset)
-      }*/
       return createNote()
     }
   },
@@ -323,8 +522,16 @@ const iterators: Iterators = {
     }
     return createNote()
   },
-  [T.RIDE]: (i, pitch, lane, { beatLen, beatInfo: { isFillAccent } }) => {
-    const weak = (i + 2) % (beatLen * 2) === 0
+  [T.RIDE]: (
+    i,
+    pitch,
+    lane,
+    { beatLen, timeSignature, beatInfo: { isFillAccent } }
+  ) => {
+    let weak = (i + 2) % (beatLen * 2) === 0
+    if (isWaltz(timeSignature)) {
+      weak = (i + 2) % (beatLen * 3) === 0
+    }
     if (isFillAccent(i) && rand(20)) {
       //console.log('fill ride')
       return createNote(randRange(110, 127), pitch)
@@ -341,7 +548,11 @@ const iterators: Iterators = {
     if (ret) {
       return ret
     }
-    if ((i + beatLen) % (beatLen * 2) === 0) {
+    let hit = (i + beatLen) % (beatLen * 2) === 0
+    if (isWaltz(opts.timeSignature)) {
+      hit = (i + beatLen) % (beatLen * 3) === 2 * beatLen
+    }
+    if (hit) {
       return createNote(randRange(85, 108), pitch)
     }
     return createNote()
@@ -415,6 +626,15 @@ const getOpts = timeSignature => ({
   beatLen: getBeatLen(timeSignature)
 })
 
+const bassMemStore = {
+  state: { memory: [] }
+}
+
+export const clearBassMemory = () => {
+  bassMemStore.state.memory = []
+  bassMemStore.state.memorySet = undefined
+}
+
 export const createBass = (scene, chordLane, style, timeSignature) => {
   const track = T.BASS
   const samples = getSamples(track)
@@ -423,9 +643,8 @@ export const createBass = (scene, chordLane, style, timeSignature) => {
     ? iterators[style][track]
     : iterators[track]
 
-  const state = {
-    memory: []
-  }
+  const state = bassMemStore.state
+  clearBassMemory()
   const opts = { ...getOpts(timeSignature), state }
 
   scene.parts[track] = {
