@@ -43,5 +43,6 @@ describe('Parser', () => {
     verify('H7add#11+9', 'B7♯9add♯11')
     verify('Cmb6', 'Cm♭6')
     verify('F9sus', 'F9sus4')
+    verify('Cmmaj7', 'Cmmaj7')
   })
 })

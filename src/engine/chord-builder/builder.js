@@ -148,7 +148,8 @@ const INTERVAL = {
   13: 21
 }
 
-const getSeventh = model => (model.quality === 'maj' ? 11 : 10)
+const getSeventh = model =>
+  model.quality === 'maj' || model.quality === 'mmaj' ? 11 : 10
 
 const adjustWithAccidental = (value, accidental) => {
   switch (accidental) {
@@ -227,7 +228,11 @@ class ChordBuilder {
     if (this.model.root) {
       notes.push(getNote(this.model, 0, 'root'))
       let third = 4
-      if (this.model.quality === 'm' || this.model.quality === 'dim') {
+      if (
+        this.model.quality === 'm' ||
+        this.model.quality === 'dim' ||
+        this.model.quality === 'mmaj'
+      ) {
         third = 3
       } else if (this.model.quality === 'sus') {
         third = null

@@ -27,6 +27,7 @@ const convertChord = x => {
     .replace('min', 'm')
     .replace('m:maj', 'mmaj')
     .replace(/o/g, 'dim')
+    .replace('r', '')
 }
 
 let DEBUG = false
@@ -105,43 +106,71 @@ const songs = files.map(filename => {
     .map(x => [x.title, x.timeSignature])
 )*/
 
-const output = songs.map(song => {
-  //console.log(song.title, song.structure, song.sections)
-  let outputted = {}
-  const data = (!song.structure ? ['A'] : song.structure)
-    .map(sect => {
-      if (outputted[sect]) {
-        return `[${sect}]`
-      }
-      const out = `[${sect}] ${song.sections[sect]
-        .map(bar => {
-          const durations = new Set(bar.map(x => x[1]))
-          const multiLen = durations.size > 1
-          return bar
-            .map(chord => {
-              return multiLen && chord[1] !== '4' ? `${chord[0]} .` : chord[0]
+const addendum = [
+  {
+    id: 'dolphindance2',
+    name: 'Dolphin Dance v2',
+    string:
+      '[B2] Bbm7/Eb;Ebmaj7;Abmaj7#5/Eb;Dm7b5 G7b9 [A] Cm7;Abmaj7;Cm7;Am7 D7;Gmaj7;Abm7 Db7;Fm7;Bb7;Cm7;Cm7/Bb;Am7;D7 [B1] Gmaj7;Fmaj7/G;A/G;Cmmaj7/G;F9sus;Cmmaj7/F;F9sus;Em7 A7;Eb7;Am7 D7;Bm7;E7 Dm7;C#m7;F#7;Bm7/E;Am7/E;Bm7/E;Am7/E',
+    swing: true,
+    tempo: 118
+  }
+]
+
+const sorted = arr => {
+  arr.sort((s1, s2) => {
+    const a = s1.name.toUpperCase()
+    const b = s2.name.toUpperCase()
+    if (a < b) return -1
+    if (a > b) return 1
+    return 0
+  })
+  return arr
+}
+
+const output = sorted(
+  songs
+    .map(song => {
+      //console.log(song.title, song.structure, song.sections)
+      let outputted = {}
+      const data = (!song.structure ? ['A'] : song.structure)
+        .map(sect => {
+          if (outputted[sect]) {
+            return `[${sect}]`
+          }
+          const out = `[${sect}] ${song.sections[sect]
+            .map(bar => {
+              const durations = new Set(bar.map(x => x[1]))
+              const multiLen = durations.size > 1
+              return bar
+                .map(chord => {
+                  return multiLen && chord[1] !== '4'
+                    ? `${chord[0]} .`
+                    : chord[0]
+                })
+                .join(' ')
             })
-            .join(' ')
+            .join(';')}`
+          outputted[sect] = true
+          return out
         })
-        .join(';')}`
-      outputted[sect] = true
+        .join(' ')
+      DEBUG = getDebug(song)
+      log(data)
+      const out = {
+        id: song.id,
+        name: song.title,
+        string: data,
+        tempo: 140,
+        swing: true
+      }
+      if (song.timeSignature !== '4/4') {
+        // one song in corpus has 3/2. time signature, correct to 3/4
+        out.ts = song.timeSignature.replace('2.', '4')
+      }
       return out
     })
-    .join(' ')
-  DEBUG = getDebug(song)
-  log(data)
-  const out = {
-    id: song.id,
-    name: song.title,
-    string: data,
-    tempo: 140,
-    swing: true
-  }
-  if (song.timeSignature !== '4/4') {
-    // one song in corpus has 3/2. time signature, correct to 3/4
-    out.ts = song.timeSignature.replace('2.', '4')
-  }
-  return out
-})
+    .concat(addendum)
+)
 
 fs.writeFileSync('assets/jazzStandards.json', JSON.stringify(output))

@@ -33,7 +33,7 @@ class ChordParser {
   setupLexer() {
     const ACCS = '#|♯|b|♭'
     const ROOT = new RegExp(`^[a-h](${ACCS})?`, 'i')
-    const QUALITY = /(\+|-|maj|min|m|aug|dom|dim|sus|alt)/i
+    const QUALITY = /(\+|-|mmaj|maj|min|m|aug|dom|dim|sus|alt)/i
     const INTERVAL = /[1-9]{1,2}/
     const MODS = `${ACCS}|\\+|\\-`
     const EXTRA = new RegExp(
@@ -61,6 +61,8 @@ class ChordParser {
           quality = 'dim'
         } else if (value.toLowerCase() === 'min' || value === '-') {
           quality = 'm'
+        } else if (value.toLowerCase() === 'mmaj') {
+          quality = 'mmaj'
         } else if (value === '+') {
           quality = 'aug'
         }
